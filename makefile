@@ -1,27 +1,25 @@
-CXX      := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -finput-charset=UTF-8 -fexec-charset=UTF-8
+编译工具 := g++
+编译参数 := -std=c++17 -Wall -Wextra -finput-charset=UTF-8 -fexec-charset=UTF-8
 
-# ★ 源码子目录
-SRCDIR   := 源码
+源码目录 := 源码
+构建目录 := 构建
 
-TARGET   := 程序
-SRCS     := 词法分析.cpp 运行软件.cpp
-OBJS     := $(addprefix $(SRCDIR)/, $(SRCS:.cpp=.o))
+运行软件 := $(构建目录)/运行软件
+源码文件 := 词法分析.cpp 运行软件.cpp
+目标文件 := $(addprefix $(构建目录)/, $(源码文件:.cpp=.o))
 
-all: $(TARGET)
+all: $(运行软件)
 
-# 链接：目标文件都在 源码/ 里
-$(TARGET): $(OBJS)
-	$(CXX) $(OBJS) -o $@
+$(运行软件): $(目标文件)
+	$(编译工具) $(目标文件) -o $@
 
-# 编译：源文件、头文件、目标文件都在 源码/ 里
-$(SRCDIR)/%.o: $(SRCDIR)/%.cpp $(SRCDIR)/词法分析.hpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(构建目录)/%.o: $(源码目录)/%.cpp $(源码目录)/词法分析.hpp
+	$(编译工具) $(编译参数) -c $< -o $@
 
-run: $(TARGET)
-	./$(TARGET)
+run: $(运行软件)
+	./$(运行软件) 测试/测试
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(源码文件) $(目标文件)
 
 .PHONY: all run clean

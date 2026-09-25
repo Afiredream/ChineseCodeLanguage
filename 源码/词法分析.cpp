@@ -17,29 +17,42 @@ static const std::unordered_map<std::string, 词元类型> 关键词语 = {
 
 词法分析::词法分析(std::string 源码) : 源码_(std::move(源码)) {}
 
-char 词法分析::当前字符() const {
-    return 位置_ < 源码_.size() ? 源码_[位置_] : '\0';
+
+std::string 词法分析::当前字符() const {
+    if (位置_ >= 源码_.size()) return "";
+    size_t 字符长度 = 索引字符长度((unsigned char)源码_[位置_]);
+    if (位置_ + 字符长度 > 源码_.size()) 字符长度 = 源码_.size() - 位置_;
+    return 源码_.substr(位置_, 字符长度);
 }
 
-char 词法分析::前进字符() {
-    char c = 源码_[位置_++];
-    if (c == '\n') { 行号_++; 列号_ = 1; }
-    else           { 列号_++; }
-    return c;
+std::string 词法分析::前进字符() {
+    if (位置_ >= 源码_.size()) return "";
+    size_t 字符长度 = 索引字符长度((unsigned char)源码_[位置_]);
+    if (位置_ + 字符长度 > 源码_.size()) 字符长度 = 源码_.size() - 位置_;
+    std::string 当前字符 = 源码_.substr(位置_, 字符长度);
+    位置_ += 字符长度;
+    if (当前字符 == "\n") {
+        行号_++;
+        列号_ = 1;
+    } else {
+        列号_++;
+    }
+    return 当前字符;
 }
 
 void 词法分析::跳过空白() {
+    const std::string 空白字符 = " \t\n\r\f\v";
     while (位置_ < 源码_.size() &&
-           std::isspace((unsigned char)当前字符())) {
+           空白字符.find(源码_[位置_]) != std::string::npos) {
         前进字符();
     }
 }
 
-词元结构 词法分析::造词元(词元类型 类型, const std::string& 文本) {
+词元结构 词法分析::构造词元(词元类型 类型, const std::string& 文本) {
     return 词元结构{类型, 文本, 行号_, 列号_};
 }
 
-std::vector<词元结构> 词法分析::分析() {
+std::vector<词元结构> 词法分析::代码分析() {
     std::vector<词元结构> 分析结果;
 
     while (位置_ < 源码_.size()) {
@@ -48,21 +61,23 @@ std::vector<词元结构> 词法分析::分析() {
 
 
 
-        char 字符单元 = 当前字符();
+        std::string 字符单元 = 当前字符();
         int 行号 = 行号_, 列号 = 列号_;
 
-        if (std::isdigit((unsigned char)字符单元)) {
+        if (源码_[位置_] >= '0' && 源码_[位置_] <= '9') {
             std::string 数字;
-            while (std::isdigit((unsigned char)当前字符()))
+            while (位置_ < 源码_.size() &&
+                源码_[位置_] >= '0' && 源码_[位置_] <= '9') {
                 数字 += 前进字符();
+            }
             分析结果.push_back({词元类型::数字, 数字, 行号, 列号});
             continue;
         }
 
-        if (字符单元 == '"') {
+        if (字符单元 == "\"") {
             前进字符();
             std::string 文本;
-            while (当前字符() != '"')
+            while (当前字符() != "\"")
                 文本 += 前进字符();
             前进字符();
             分析结果.push_back({词元类型::文本, 文本, 行号, 列号});
@@ -70,47 +85,63 @@ std::vector<词元结构> 词法分析::分析() {
         }
 
 
-
-        switch (字符单元) {
-            case '+': 前进字符(); 分析结果.push_back({词元类型::加号, "+", 行号, 列号}); continue;
-            case '-': 前进字符(); 分析结果.push_back({词元类型::减号, "-", 行号, 列号}); continue;
-            case '*': 前进字符(); 分析结果.push_back({词元类型::星号, "*", 行号, 列号}); continue;
-            case '/': 前进字符(); 分析结果.push_back({词元类型::斜杠, "/", 行号, 列号}); continue;
-            case '=': 前进字符(); 分析结果.push_back({词元类型::等号, "=", 行号, 列号}); continue;
-            case '&': 前进字符(); 分析结果.push_back({词元类型::和号, "&", 行号, 列号}); continue;
-            case '|': 前进字符(); 分析结果.push_back({词元类型::竖线, "|", 行号, 列号}); continue;
-            case ';': 前进字符(); 分析结果.push_back({词元类型::分号, ";", 行号, 列号}); continue;
-            case ',': 前进字符(); 分析结果.push_back({词元类型::逗号, ",", 行号, 列号}); continue;
-            case '.': 前进字符(); 分析结果.push_back({词元类型::点号, ".", 行号, 列号}); continue;
-            case ':': 前进字符(); 分析结果.push_back({词元类型::冒号, ":", 行号, 列号}); continue;
-            case '!': 前进字符(); 分析结果.push_back({词元类型::叹号, "!", 行号, 列号}); continue;
-            case '?': 前进字符(); 分析结果.push_back({词元类型::问号, "?", 行号, 列号}); continue;
-            case '#': 前进字符(); 分析结果.push_back({词元类型::井号, "#", 行号, 列号}); continue;
-            case '$': 前进字符(); 分析结果.push_back({词元类型::美元符, "$", 行号, 列号}); continue;
-            case '^': 前进字符(); 分析结果.push_back({词元类型::脱字符, "^", 行号, 列号}); continue;
-            case '~': 前进字符(); 分析结果.push_back({词元类型::波浪号, "~", 行号, 列号}); continue;
-            case '>': 前进字符(); 分析结果.push_back({词元类型::大于号, ">", 行号, 列号}); continue;
-            case '<': 前进字符(); 分析结果.push_back({词元类型::小于号, "<", 行号, 列号}); continue;
-            case '%': 前进字符(); 分析结果.push_back({词元类型::百分号, "%", 行号, 列号}); continue;
-            case '(': 前进字符(); 分析结果.push_back({词元类型::左圆括号, "(", 行号, 列号}); continue;
-            case ')': 前进字符(); 分析结果.push_back({词元类型::右圆括号, ")", 行号, 列号}); continue;
-            case '{': 前进字符(); 分析结果.push_back({词元类型::左花括号, "{", 行号, 列号}); continue;
-            case '}': 前进字符(); 分析结果.push_back({词元类型::右花括号, "}", 行号, 列号}); continue;
-            case '[': 前进字符(); 分析结果.push_back({词元类型::左方括号, "[", 行号, 列号}); continue;
-            case ']': 前进字符(); 分析结果.push_back({词元类型::右方括号, "]", 行号, 列号}); continue;
-            default: break;
-        }
+        if (字符单元 == "") continue;
+        else if (字符单元 == "+") { 前进字符(); 分析结果.push_back({词元类型::加号, "+", 行号, 列号}); continue; }
+        else if (字符单元 == "-") { 前进字符(); 分析结果.push_back({词元类型::减号, "-", 行号, 列号}); continue; }
+        else if (字符单元 == "*") { 前进字符(); 分析结果.push_back({词元类型::星号, "*", 行号, 列号}); continue; }
+        else if (字符单元 == "/") { 前进字符(); 分析结果.push_back({词元类型::斜杠, "/", 行号, 列号}); continue; }
+        else if (字符单元 == "=") { 前进字符(); 分析结果.push_back({词元类型::等号, "=", 行号, 列号}); continue; }
+        else if (字符单元 == "&") { 前进字符(); 分析结果.push_back({词元类型::和号, "&", 行号, 列号}); continue; }
+        else if (字符单元 == "|") { 前进字符(); 分析结果.push_back({词元类型::竖线, "|", 行号, 列号}); continue; }
+        else if (字符单元 == ";") { 前进字符(); 分析结果.push_back({词元类型::分号, ";", 行号, 列号}); continue; }
+        else if (字符单元 == ",") { 前进字符(); 分析结果.push_back({词元类型::逗号, ",", 行号, 列号}); continue; }
+        else if (字符单元 == ".") { 前进字符(); 分析结果.push_back({词元类型::点号, ".", 行号, 列号}); continue; }
+        else if (字符单元 == ":") { 前进字符(); 分析结果.push_back({词元类型::冒号, ":", 行号, 列号}); continue; }
+        else if (字符单元 == "：") { 前进字符(); 分析结果.push_back({词元类型::冒号, ":", 行号, 列号}); continue; }
+        else if (字符单元 == "!") { 前进字符(); 分析结果.push_back({词元类型::叹号, "!", 行号, 列号}); continue; }
+        else if (字符单元 == "?") { 前进字符(); 分析结果.push_back({词元类型::问号, "?", 行号, 列号}); continue; }
+        else if (字符单元 == "？") { 前进字符(); 分析结果.push_back({词元类型::问号, "?", 行号, 列号}); continue; }
+        else if (字符单元 == "#") { 前进字符(); 分析结果.push_back({词元类型::井号, "#", 行号, 列号}); continue; }
+        else if (字符单元 == "$") { 前进字符(); 分析结果.push_back({词元类型::美元符, "$", 行号, 列号}); continue; }
+        else if (字符单元 == "^") { 前进字符(); 分析结果.push_back({词元类型::脱字符, "^", 行号, 列号}); continue; }
+        else if (字符单元 == "~") { 前进字符(); 分析结果.push_back({词元类型::波浪号, "~", 行号, 列号}); continue; }
+        else if (字符单元 == ">") { 前进字符(); 分析结果.push_back({词元类型::大于号, ">", 行号, 列号}); continue; }
+        else if (字符单元 == "<") { 前进字符(); 分析结果.push_back({词元类型::小于号, "<", 行号, 列号}); continue; }
+        else if (字符单元 == "%") { 前进字符(); 分析结果.push_back({词元类型::百分号, "%", 行号, 列号}); continue; }
+        else if (字符单元 == "(") { 前进字符(); 分析结果.push_back({词元类型::左圆括号, "(", 行号, 列号}); continue; }
+        else if (字符单元 == ")") { 前进字符(); 分析结果.push_back({词元类型::右圆括号, ")", 行号, 列号}); continue; }
+        else if (字符单元 == "{") { 前进字符(); 分析结果.push_back({词元类型::左花括号, "{", 行号, 列号}); continue; }
+        else if (字符单元 == "}") { 前进字符(); 分析结果.push_back({词元类型::右花括号, "}", 行号, 列号}); continue; }
+        else if (字符单元 == "[") { 前进字符(); 分析结果.push_back({词元类型::左方括号, "[", 行号, 列号}); continue; }
+        else if (字符单元 == "]") { 前进字符(); 分析结果.push_back({词元类型::右方括号, "]", 行号, 列号}); continue; }
 
         std::string 词语;
         while (位置_ < 源码_.size()) {
-            unsigned char 字符 = (unsigned char)当前字符();
-            if (std::isspace(字符)) break;
-            if (字符=='('||字符==')'||字符=='{'||字符=='}'||字符=='['||字符==']'||
-                字符=='+'||字符=='-'||字符=='*'||字符=='/'||
-                字符==';'||字符=='='||字符=='"') break;
+            char 首 = 源码_[位置_];
+
+            // 空白终止
+            if (首 == ' '  || 首 == '\t' || 首 == '\n' ||
+                首 == '\r' || 首 == '\f' || 首 == '\v') break;
+
+            // ASCII 符号终止（和符号表一致）
+            if (首 == '(' || 首 == ')' || 首 == '{' || 首 == '}' ||
+                首 == '[' || 首 == ']' || 首 == '+' || 首 == '-' ||
+                首 == '*' || 首 == '/' || 首 == ';' || 首 == '=' ||
+                首 == '"' || 首 == ',' || 首 == '.' || 首 == ':' ||
+                首 == '<' || 首 == '>' || 首 == '!' || 首 == '?' ||
+                首 == '&' || 首 == '|' || 首 == '^' || 首 == '~' ||
+                首 == '#' || 首 == '$' || 首 == '%') break;
+
+            // 全角符号终止
+            if (源码_.compare(位置_, 3, "：") == 0) break;
+
             词语 += 前进字符();
         }
-        if (词语.empty()) { 前进字符(); continue; }
+
+        if (词语.empty()) {
+            前进字符();
+            continue;
+        }
 
         auto it = 关键词语.find(词语);
         if (it != 关键词语.end()) {

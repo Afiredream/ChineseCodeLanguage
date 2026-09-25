@@ -1,9 +1,8 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <ostream>          // ★ 必须加
+#include <ostream>
 
-// ========== 词元类型 ==========
 enum class 词元类型 {
     如果, 或者, 函数, 返回,
     常量, 变量, 容量, 类型,
@@ -79,18 +78,25 @@ inline std::ostream& operator<<(std::ostream& os, const 词元结构& t) {
     return os;
 }
 
-// ========== 词法分析器 ==========
 class 词法分析 {
 public:
     explicit 词法分析(std::string 源码);
-    std::vector<词元结构> 分析();
+    std::vector<词元结构> 代码分析();
 private:
     std::string 源码_;
     size_t 位置_ = 0;
     int 行号_ = 1;
     int 列号_ = 1;
-    char 当前字符() const;
-    char 前进字符();
+    std::string 当前字符() const;
+    std::string 前进字符();
     void 跳过空白();
-    词元结构 造词元(词元类型 类型, const std::string& 文本);
+    词元结构 构造词元(词元类型 类型, const std::string& 文本);
 };
+
+
+inline size_t 索引字符长度(unsigned char 首位字节) {
+    if ((首位字节 & 0x80) == 0x00) return 1;
+    if ((首位字节 & 0xE0) == 0xC0) return 2;
+    if ((首位字节 & 0xF0) == 0xE0) return 3;
+    if ((首位字节 & 0xF8) == 0xF0) return 4;
+}
