@@ -6,6 +6,7 @@
 
 #include "词法分析.hpp"
 #include "语法分析.hpp"
+#include "语义分析.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
