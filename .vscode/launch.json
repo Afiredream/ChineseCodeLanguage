@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "make run",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/构建/运行软件",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "make run",
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "externalConsole": false
+        }
+    ]
+}
