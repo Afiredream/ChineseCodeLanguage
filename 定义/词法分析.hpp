@@ -8,7 +8,7 @@ enum class 词元类型 {
     常量, 变量, 容量, 类型,
     数字, 文本, 名称,
     加号, 减号, 星号, 斜杠, 百分号,
-    等号, 大于号, 小于号,
+    等号, 大于号, 小于号, 句号,
     和号, 竖线, 脱字符, 波浪号,
     分号, 逗号, 点号, 冒号,
     左圆括号, 右圆括号,
@@ -38,6 +38,7 @@ inline std::string 类型文本(词元类型 类型) {
         case 词元类型::竖线: return "竖线";
         case 词元类型::等号: return "等号";
         case 词元类型::分号: return "分号";
+        case 词元类型::句号: return "句号";
         case 词元类型::逗号: return "逗号";
         case 词元类型::点号: return "点号";
         case 词元类型::冒号: return "冒号";
@@ -99,4 +100,5 @@ inline size_t 索引字符长度(unsigned char 首位字节) {
     if ((首位字节 & 0xE0) == 0xC0) return 2;
     if ((首位字节 & 0xF0) == 0xE0) return 3;
     if ((首位字节 & 0xF8) == 0xF0) return 4;
+    return 0;
 }

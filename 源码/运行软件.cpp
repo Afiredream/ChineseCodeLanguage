@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include "词法分析.hpp"
-#include "语法分析.hpp"
-#include "语义分析.hpp"
+// #include "./词法分析/语法分析.hpp"
+// #include "语义分析.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -29,9 +29,12 @@ int main(int argc, char* argv[]) {
     词法分析 lex(源码);
     auto 词元流 = lex.代码分析();
 
-
-    语法分析 解析器(std::move(词元流));
-    程序 ast = 解析器.解析();
+    for (const auto& 词元 : 词元流) {
+        std::cout << 词元 << "\n";
+    }
+    
+    // 语法分析 解析器(std::move(词元流));
+    // 程序 ast = 解析器.解析();
 
     return 0;
 }

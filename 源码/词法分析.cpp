@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "词法分析.hpp"
+#include "符号分析.hpp"
 
 static const std::unordered_map<std::string, 词元类型> 关键词语 = {
     {"如果", 词元类型::如果},
@@ -85,35 +86,12 @@ std::vector<词元结构> 词法分析::代码分析() {
         }
 
 
-        if (字符单元 == "") continue;
-        else if (字符单元 == "+") { 前进字符(); 分析结果.push_back({词元类型::加号, "+", 行号, 列号}); continue; }
-        else if (字符单元 == "-") { 前进字符(); 分析结果.push_back({词元类型::减号, "-", 行号, 列号}); continue; }
-        else if (字符单元 == "*") { 前进字符(); 分析结果.push_back({词元类型::星号, "*", 行号, 列号}); continue; }
-        else if (字符单元 == "/") { 前进字符(); 分析结果.push_back({词元类型::斜杠, "/", 行号, 列号}); continue; }
-        else if (字符单元 == "=") { 前进字符(); 分析结果.push_back({词元类型::等号, "=", 行号, 列号}); continue; }
-        else if (字符单元 == "&") { 前进字符(); 分析结果.push_back({词元类型::和号, "&", 行号, 列号}); continue; }
-        else if (字符单元 == "|") { 前进字符(); 分析结果.push_back({词元类型::竖线, "|", 行号, 列号}); continue; }
-        else if (字符单元 == ";") { 前进字符(); 分析结果.push_back({词元类型::分号, ";", 行号, 列号}); continue; }
-        else if (字符单元 == ",") { 前进字符(); 分析结果.push_back({词元类型::逗号, ",", 行号, 列号}); continue; }
-        else if (字符单元 == ".") { 前进字符(); 分析结果.push_back({词元类型::点号, ".", 行号, 列号}); continue; }
-        else if (字符单元 == ":") { 前进字符(); 分析结果.push_back({词元类型::冒号, ":", 行号, 列号}); continue; }
-        else if (字符单元 == "：") { 前进字符(); 分析结果.push_back({词元类型::冒号, ":", 行号, 列号}); continue; }
-        else if (字符单元 == "!") { 前进字符(); 分析结果.push_back({词元类型::叹号, "!", 行号, 列号}); continue; }
-        else if (字符单元 == "?") { 前进字符(); 分析结果.push_back({词元类型::问号, "?", 行号, 列号}); continue; }
-        else if (字符单元 == "？") { 前进字符(); 分析结果.push_back({词元类型::问号, "?", 行号, 列号}); continue; }
-        else if (字符单元 == "#") { 前进字符(); 分析结果.push_back({词元类型::井号, "#", 行号, 列号}); continue; }
-        else if (字符单元 == "$") { 前进字符(); 分析结果.push_back({词元类型::美元符, "$", 行号, 列号}); continue; }
-        else if (字符单元 == "^") { 前进字符(); 分析结果.push_back({词元类型::脱字符, "^", 行号, 列号}); continue; }
-        else if (字符单元 == "~") { 前进字符(); 分析结果.push_back({词元类型::波浪号, "~", 行号, 列号}); continue; }
-        else if (字符单元 == ">") { 前进字符(); 分析结果.push_back({词元类型::大于号, ">", 行号, 列号}); continue; }
-        else if (字符单元 == "<") { 前进字符(); 分析结果.push_back({词元类型::小于号, "<", 行号, 列号}); continue; }
-        else if (字符单元 == "%") { 前进字符(); 分析结果.push_back({词元类型::百分号, "%", 行号, 列号}); continue; }
-        else if (字符单元 == "(") { 前进字符(); 分析结果.push_back({词元类型::左圆括号, "(", 行号, 列号}); continue; }
-        else if (字符单元 == ")") { 前进字符(); 分析结果.push_back({词元类型::右圆括号, ")", 行号, 列号}); continue; }
-        else if (字符单元 == "{") { 前进字符(); 分析结果.push_back({词元类型::左花括号, "{", 行号, 列号}); continue; }
-        else if (字符单元 == "}") { 前进字符(); 分析结果.push_back({词元类型::右花括号, "}", 行号, 列号}); continue; }
-        else if (字符单元 == "[") { 前进字符(); 分析结果.push_back({词元类型::左方括号, "[", 行号, 列号}); continue; }
-        else if (字符单元 == "]") { 前进字符(); 分析结果.push_back({词元类型::右方括号, "]", 行号, 列号}); continue; }
+        auto 运算符号 = 符号字典.find(字符单元);
+        if (运算符号 != 符号字典.end()) {
+            分析结果.push_back({运算符号->second, 字符单元, 行号, 列号});
+            前进字符();
+            continue;
+        }
 
         std::string 词语;
         while (位置_ < 源码_.size()) {
