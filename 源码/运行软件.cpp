@@ -6,8 +6,9 @@
 
 #include "词法分析.hpp"
 #include "词法调试.hpp"
-// #include "./词法分析/语法分析.hpp"
-// #include "语义分析.hpp"
+#include "语义分析.hpp"
+#include "语法分析.hpp"
+#include "语法调试.hpp"
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
@@ -34,8 +35,10 @@ int main(int argc, char* argv[]) {
     std::cout << 词元 << "\n";
   }
 
-  // 语法分析 解析器(std::move(词元流));
-  // 程序 ast = 解析器.解析();
+  auto 语句流 = 语法分析{}.代码分析(std::move(词元流));
+  for (const auto& 节点 : 语句流) {
+    std::visit([](const auto& 实际语句) { std::cout << 实际语句.语句 << "\n"; }, 节点);
+  }
 
   return 0;
 }
