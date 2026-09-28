@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 
+#include "代码解释.hpp"
+#include "内置函数.hpp"
 #include "词法分析.hpp"
 #include "词法调试.hpp"
 #include "语义分析.hpp"
@@ -38,7 +40,11 @@ int main(int argc, char* argv[]) {
   auto 语句流 = 语法分析{}.代码分析(std::move(词元流));
   for (const auto& 节点 : 语句流) {
     std::visit([](const auto& 实际语句) { std::cout << 实际语句.语句 << "\n"; }, 节点);
-  }
+  };
+
+  std::cout << "========输出内容=========" << std::endl;
+  代码解释 运行流(std::move(语句流));
+  std::cout << "========输出内容=========" << std::endl;
 
   return 0;
 }
