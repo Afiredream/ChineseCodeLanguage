@@ -1,5 +1,5 @@
 编译工具 := g++
-编译参数 := -std=c++17 -Wall -Wextra -finput-charset=UTF-8 -fexec-charset=UTF-8 -I定义
+编译参数 := -std=c++17 -Wall -Wextra -finput-charset=UTF-8 -fexec-charset=UTF-8
 
 源码目录 := 源码
 构建目录 := 构建

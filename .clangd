@@ -1,0 +1,4 @@
+CompileFlags:
+  Add:
+    - -I定义
+    - -std=c++17
